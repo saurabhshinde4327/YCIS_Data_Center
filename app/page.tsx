@@ -1,5 +1,5 @@
 "use client"
-
+import { Analytics } from "@vercel/analytics/next"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { HeroSection } from "@/components/hero-section"

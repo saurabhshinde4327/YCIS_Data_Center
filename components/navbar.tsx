@@ -46,11 +46,6 @@ export function Navbar() {
     <header className="sticky top-0 z-40 w-full border-b bg-background">
       <div className="container flex h-16 items-center">
         <Link href="/" className="mr-6 flex items-center space-x-2">
-          <img 
-            src="LOGO1.png" 
-            alt="Data Center Logo" 
-            className="h-12 w-auto"
-          />
           <span className="hidden sm:text-2xl font-bold sm:inline-block text-blue-900">YCIS DATA CENTER</span>
         </Link>
         <div className="hidden md:flex">

@@ -1,5 +1,5 @@
 "use client"
-import { Analytics } from "@vercel/analytics/next"
+// Remove unused import since Analytics is not used in the code
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { HeroSection } from "@/components/hero-section"
@@ -10,6 +10,7 @@ import { Database, Server, Mail, Globe } from "lucide-react"
 import { ClientLogoSlider } from "@/components/client-logo-slider"
 import { AboutInstitute } from "@/components/about-institute"
 import { useState, useEffect } from "react"
+import { Analytics } from "@vercel/analytics/next"
 
 const technologies = [
   { name: "Linux", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Tux.svg/1200px-Tux.svg.png" },

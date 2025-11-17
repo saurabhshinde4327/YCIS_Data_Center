@@ -1,0 +1,50 @@
+[
+  {
+    "id": "1760800653265",
+    "createdAt": "2025-10-18T15:17:33.265Z",
+    "updatedAt": "2025-10-18T15:17:33.265Z",
+    "name": "Koha Library Software ",
+    "description": "It operates via the open-source library system Koha, which underpins the network’s catalog and library operations tools.",
+    "logo": "",
+    "projectImage": "/uploads/project-1760800637154-Screenshot-2025-10-18-204556.png",
+    "url": "https://staff.rayatlibrarynetwork.org/",
+    "category": "Web Application",
+    "isActive": true
+  },
+  {
+    "id": "1760799980706",
+    "createdAt": "2025-10-18T15:06:20.706Z",
+    "updatedAt": "2025-10-18T15:06:31.584Z",
+    "name": "KBP University",
+    "description": "KBP University is a state‐level institution established under the Rayat Shikshan Sanstha umbrella, offering a wide range of undergraduate, postgraduate and doctoral programmes across science, technology, humanities, commerce and vocational streams",
+    "logo": "",
+    "projectImage": "/uploads/project-1760799977955-Screenshot-2025-10-18-203425.png",
+    "url": "https://unikbp.ac.in/",
+    "category": "Website ",
+    "isActive": true
+  },
+  {
+    "id": "1760799554370",
+    "createdAt": "2025-10-18T14:59:14.370Z",
+    "updatedAt": "2025-10-18T14:59:14.370Z",
+    "name": "YCIS Website ",
+    "description": "Yashavantrao Chavan Institute of Science, Satara nge of undergraduate to doctoral programmes in sciences, vocational studies and technology. It features modern infrastructure, industry-oriented courses (such as animation, nanoscience, food technology) alongside traditional science disciplines, aimed at enhancing students’ global employability. Recognised for excellence (A+ grade by National Assessment and Accreditation Council, status as a College with Potential for Excellence, etc.), the institute prides itself on research, innovation and holistic development.",
+    "logo": "",
+    "projectImage": "/uploads/project-1760799546241-Screenshot-2025-10-18-202850.png",
+    "url": "https://ycis.ac.in/",
+    "category": "Website ",
+    "isActive": true
+  },
+  {
+    "id": "1760798321362",
+    "createdAt": "2025-10-18T14:38:41.362Z",
+    "updatedAt": "2025-10-18T14:47:19.879Z",
+    "name": "YCIS Locker App",
+    "description": "The YCIS Locker App is a secure digital platform designed for YCIS College students to store and manage their academic documents online. It provides easy access through a student ID and password, offering a personalized dashboard to view and organize files. The app ensures document safety, convenience, and accessibility from anywhere. It helps reduce reliance on physical copies while keeping records centralized within the college system. Overall, it enhances efficiency and security in managing student academic information.",
+    "logo": "/logo.png",
+    "projectImage": "/uploads/project-1760798484347-Screenshot-2025-10-18-195255.png",
+    "url": "https://www.ycisdatacenter.com/",
+    "category": "Web Application",
+    "isActive": true
+  }
+]

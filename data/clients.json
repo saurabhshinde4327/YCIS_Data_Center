@@ -1,0 +1,27 @@
+[
+  {
+    "id": "1762246713844",
+    "createdAt": "2025-11-04T08:58:33.844Z",
+    "updatedAt": "2025-11-04T09:01:19.727Z",
+    "name": "The Coordinator ",
+    "email": "coeaiad@gmail.com",
+    "password": "Coeaiad@2025",
+    "phone": "",
+    "company": "center of excellence Artificial Intelligence and Development",
+    "package": "Web Hosting ",
+    "status": "active",
+    "renewalDate": "2026-10-15"
+  },
+  {
+    "id": "1761044943297",
+    "createdAt": "2025-10-21T11:09:03.297Z",
+    "updatedAt": "2025-10-21T11:09:03.297Z",
+    "name": "Rayat CIII Center",
+    "email": "support@rayatciii.org",
+    "password": "Rayat@2025",
+    "phone": "8275370920",
+    "company": "Rayat CIII Center",
+    "package": "Email Hosting Services ",
+    "status": "active"
+  }
+]

@@ -1,0 +1,20 @@
+[
+  {
+    "id": "1",
+    "name": "YCIS Locker App",
+    "amount": 499.94,
+    "status": "Active",
+    "clientPay": true,
+    "created_at": "2025-10-18T14:38:41.362Z",
+    "createdDate": "2025-10-18T14:38:41.362Z"
+  },
+  {
+    "id": "2", 
+    "name": "Website Development",
+    "amount": 2500.00,
+    "status": "Inactive",
+    "clientPay": false,
+    "created_at": "2025-09-15T10:30:00.000Z",
+    "createdDate": "2025-09-15T10:30:00.000Z"
+  }
+]

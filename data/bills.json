@@ -1,0 +1,32 @@
+[
+  {
+    "id": "1",
+    "description": "Office Rent",
+    "amount": 15000.00,
+    "date": "2025-10-01",
+    "category": "office",
+    "vendor": "Property Management",
+    "status": "paid",
+    "notes": "Monthly office rent payment"
+  },
+  {
+    "id": "2",
+    "description": "Internet Bill",
+    "amount": 2500.00,
+    "date": "2025-10-15",
+    "category": "utilities",
+    "vendor": "ISP Provider",
+    "status": "pending",
+    "notes": "Monthly internet service"
+  },
+  {
+    "id": "3",
+    "description": "Server Maintenance",
+    "amount": 5000.00,
+    "date": "2025-10-10",
+    "category": "maintenance",
+    "vendor": "Tech Services",
+    "status": "approved",
+    "notes": "Monthly server maintenance"
+  }
+]

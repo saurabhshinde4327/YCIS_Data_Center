@@ -1,0 +1,10 @@
+# Data Directory
+
+This directory stores persistent data files for the application.
+
+## Files:
+- `clients.json` - Client accounts database (auto-created)
+
+**Note:** This folder is created automatically by the system.
+
+

@@ -1,0 +1,56 @@
+[
+  {
+    "id": "1762247169324",
+    "createdAt": "2025-11-04T09:06:09.324Z",
+    "updatedAt": "2025-11-04T09:06:09.324Z",
+    "invoiceNumber": "DC0008",
+    "clientName": "The Coordinator ",
+    "clientEmail": "coeaiad@gmail.com",
+    "clientAddress": "Center of Excellence Artificial Intelligence and Development",
+    "clientPhone": "",
+    "issueDate": "2025-11-04",
+    "dueDate": "2025-12-04",
+    "renewalDate": "2026-10-15",
+    "taxRate": 0,
+    "status": "Sent",
+    "notes": "",
+    "subtotal": 12000,
+    "taxAmount": 0,
+    "totalAmount": 12000,
+    "items": [
+      {
+        "description": "Web Development (COE-AIAD) Website coeaiad.ycis.ac.in",
+        "quantity": 1,
+        "unitPrice": 12000,
+        "totalPrice": 12000
+      }
+    ]
+  },
+  {
+    "id": "1761047069921",
+    "createdAt": "2025-10-21T11:44:29.921Z",
+    "updatedAt": "2025-10-21T11:44:29.921Z",
+    "invoiceNumber": "DC0001",
+    "clientName": "Rayat CIII Center",
+    "clientEmail": "support@rayatciii.org",
+    "clientAddress": "Rayat CIII Center",
+    "clientPhone": "8275370920",
+    "issueDate": "2025-07-01",
+    "dueDate": "2025-07-15",
+    "renewalDate": "2026-07-01",
+    "taxRate": 0,
+    "status": "Paid",
+    "notes": "",
+    "subtotal": 5500,
+    "taxAmount": 0,
+    "totalAmount": 5500,
+    "items": [
+      {
+        "description": "Email and Wordpress Web Hosting ",
+        "quantity": 1,
+        "unitPrice": 5500,
+        "totalPrice": 5500
+      }
+    ]
+  }
+]

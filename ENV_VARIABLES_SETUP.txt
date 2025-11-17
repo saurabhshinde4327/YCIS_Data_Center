@@ -1,0 +1,39 @@
+# ========================================
+# YCIS Data Center - Environment Variables
+# ========================================
+# Create a file named .env.local in your project root
+# and add these variables with your actual values
+
+# ========================================
+# DATABASE CONFIGURATION
+# ========================================
+DB_HOST=91.108.105.168
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=Saurabh@2000
+DB_NAME=ycis_datacenter
+DB_CONN_LIMIT=10
+
+# ========================================
+# EMAIL SERVICE (Contact Form)
+# ========================================
+# Get your API key from https://resend.com
+RESEND_API_KEY=re_your_api_key_here
+
+# Email addresses
+CONTACT_TO_EMAIL=datacenter@ycis.ac.in
+CONTACT_FROM_EMAIL=contact@ycis.ac.in
+
+# Note: If domain not verified in Resend, use:
+# CONTACT_FROM_EMAIL=onboarding@resend.dev
+
+# ========================================
+# QUICK START
+# ========================================
+# 1. Create a new file: .env.local
+# 2. Copy the variables above
+# 3. Replace "re_your_api_key_here" with your actual Resend API key
+# 4. Save the file
+# 5. Restart your dev server: npm run dev
+# 6. Test the contact form at /contact
+

@@ -5,8 +5,10 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Download, Eye, Database, FileText, ArrowLeft, Filter } from "lucide-react"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Search, Download, Eye, Database, FileText, ArrowLeft, Filter, Info, Users, Calendar } from "lucide-react"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 
@@ -34,6 +36,28 @@ export default function DatasetsPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [categories, setCategories] = useState<string[]>([])
+  const [downloadDialogOpen, setDownloadDialogOpen] = useState(false)
+  const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null)
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    contactNo: ""
+  })
+  const [formErrors, setFormErrors] = useState({
+    name: "",
+    email: "",
+    contactNo: ""
+  })
+  const [infoDialogOpen, setInfoDialogOpen] = useState(false)
+  const [selectedDatasetInfo, setSelectedDatasetInfo] = useState<Dataset | null>(null)
+  const [downloadStats, setDownloadStats] = useState<{
+    totalDownloads: number
+    recentDownloads: Array<{
+      userName: string
+      downloadedAt: string
+    }>
+  } | null>(null)
+  const [loadingStats, setLoadingStats] = useState(false)
 
   useEffect(() => {
     fetchDatasets()
@@ -103,12 +127,73 @@ export default function DatasetsPage() {
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
   }
 
-  const handleDownload = async (dataset: Dataset) => {
+  const validateForm = (): boolean => {
+    const errors = {
+      name: "",
+      email: "",
+      contactNo: ""
+    }
+    let isValid = true
+
+    if (!formData.name.trim()) {
+      errors.name = "Name is required"
+      isValid = false
+    }
+
+    if (!formData.email.trim()) {
+      errors.email = "Email is required"
+      isValid = false
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      errors.email = "Please enter a valid email address"
+      isValid = false
+    }
+
+    if (!formData.contactNo.trim()) {
+      errors.contactNo = "Contact number is required"
+      isValid = false
+    } else if (!/^[0-9+\-\s()]+$/.test(formData.contactNo)) {
+      errors.contactNo = "Please enter a valid contact number"
+      isValid = false
+    }
+
+    setFormErrors(errors)
+    return isValid
+  }
+
+  const handleDownloadClick = (dataset: Dataset) => {
+    setSelectedDataset(dataset)
+    setFormData({ name: "", email: "", contactNo: "" })
+    setFormErrors({ name: "", email: "", contactNo: "" })
+    setDownloadDialogOpen(true)
+  }
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!validateForm() || !selectedDataset) {
+      return
+    }
+
+    // Close dialog and start download
+    setDownloadDialogOpen(false)
+    
     try {
-      setDownloadingId(dataset.id)
+      setDownloadingId(selectedDataset.id)
       
       // Get download URL (this will increment downloads on the server)
-      const response = await fetch(`/api/datasets/${dataset.id}/download`)
+      // Optionally send user info to the API
+      const response = await fetch(`/api/datasets/${selectedDataset.id}/download`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          contactNo: formData.contactNo
+        })
+      })
+      
       if (!response.ok) throw new Error('Failed to get download URL')
       
       const data = await response.json()
@@ -125,13 +210,22 @@ export default function DatasetsPage() {
       document.body.removeChild(link)
       
       // Refresh dataset to get updated counts from server
-      await refreshDataset(dataset.id)
+      await refreshDataset(selectedDataset.id)
+      
+      // Reset form
+      setFormData({ name: "", email: "", contactNo: "" })
+      setSelectedDataset(null)
     } catch (error) {
       console.error('Error downloading dataset:', error)
       alert('Failed to download dataset. Please try again.')
     } finally {
       setDownloadingId(null)
     }
+  }
+
+  const handleDownload = async (dataset: Dataset) => {
+    // This function is kept for backward compatibility but now redirects to form
+    handleDownloadClick(dataset)
   }
 
   const handleView = async (datasetId: string) => {
@@ -145,6 +239,40 @@ export default function DatasetsPage() {
     } catch (error) {
       console.error('Error incrementing views:', error)
     }
+  }
+
+  const handleViewInfo = async (dataset: Dataset) => {
+    setSelectedDatasetInfo(dataset)
+    setInfoDialogOpen(true)
+    setLoadingStats(true)
+    try {
+      const res = await fetch(`/api/datasets/${dataset.id}/downloads`)
+      if (!res.ok) throw new Error('Failed to load download information')
+      const logs = await res.json()
+      setDownloadStats({
+        totalDownloads: logs.length,
+        recentDownloads: logs.slice(0, 10).map((log: any) => ({
+          userName: log.userName,
+          downloadedAt: log.downloadedAt
+        }))
+      })
+    } catch (e) {
+      console.error('Error loading download stats:', e)
+      setDownloadStats({ totalDownloads: 0, recentDownloads: [] })
+    } finally {
+      setLoadingStats(false)
+    }
+  }
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
   }
 
   if (loading) {
@@ -296,24 +424,35 @@ export default function DatasetsPage() {
                       </div>
                     </div>
                     
-                    {/* Download Button */}
-                    <Button
-                      onClick={() => handleDownload(dataset)}
-                      disabled={downloadingId === dataset.id}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
-                    >
-                      {downloadingId === dataset.id ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
-                          Downloading...
-                        </>
-                      ) : (
-                        <>
-                          <Download className="h-4 w-4 mr-2" />
-                          Download Dataset
-                        </>
-                      )}
-                    </Button>
+                    {/* Action Buttons */}
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleViewInfo(dataset)}
+                        className="flex-1"
+                      >
+                        <Info className="h-4 w-4 mr-2" />
+                        Info
+                      </Button>
+                      <Button
+                        onClick={() => handleDownloadClick(dataset)}
+                        disabled={downloadingId === dataset.id}
+                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
+                      >
+                        {downloadingId === dataset.id ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
+                            Downloading...
+                          </>
+                        ) : (
+                          <>
+                            <Download className="h-4 w-4 mr-2" />
+                            Download
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -323,6 +462,198 @@ export default function DatasetsPage() {
       </div>
 
       <Footer />
+
+      {/* Dataset Information Dialog */}
+      <Dialog open={infoDialogOpen} onOpenChange={setInfoDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Info className="h-5 w-5" />
+              Dataset Information - {selectedDatasetInfo?.title}
+            </DialogTitle>
+            <DialogDescription>
+              View detailed information about this dataset
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedDatasetInfo && (
+            <div className="mt-4 space-y-6">
+              {/* Basic Information */}
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Basic Information</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Title:</span>
+                    <span className="font-medium">{selectedDatasetInfo.title}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Category:</span>
+                    <Badge variant="outline">{selectedDatasetInfo.category}</Badge>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">File Size:</span>
+                    <span className="font-medium">{formatFileSize(selectedDatasetInfo.fileSize)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">File Type:</span>
+                    <span className="font-medium">{selectedDatasetInfo.fileType}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Views:</span>
+                    <span className="font-medium">{selectedDatasetInfo.views}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Downloads:</span>
+                    <span className="font-medium">{selectedDatasetInfo.downloads}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Description */}
+              <div>
+                <h3 className="font-semibold text-lg mb-2">Description</h3>
+                <p className="text-sm text-gray-700">{selectedDatasetInfo.description}</p>
+              </div>
+
+              {/* Tags */}
+              {selectedDatasetInfo.tags.length > 0 && (
+                <div>
+                  <h3 className="font-semibold text-lg mb-2">Tags</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedDatasetInfo.tags.map((tag, idx) => (
+                      <Badge key={idx} variant="secondary" className="text-xs">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Download Statistics */}
+              <div>
+                <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Download Statistics
+                </h3>
+                {loadingStats ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-600 border-t-transparent"></div>
+                  </div>
+                ) : downloadStats ? (
+                  <div className="space-y-3">
+                    <div className="p-3 bg-blue-50 rounded-lg">
+                      <p className="text-sm text-blue-900">
+                        <strong>Total Downloads:</strong> {downloadStats.totalDownloads} user{downloadStats.totalDownloads !== 1 ? 's' : ''}
+                      </p>
+                    </div>
+                    {downloadStats.recentDownloads.length > 0 && (
+                      <div>
+                        <p className="text-sm font-medium text-gray-700 mb-2">Recent Downloads:</p>
+                        <div className="space-y-2 max-h-48 overflow-y-auto">
+                          {downloadStats.recentDownloads.map((download, idx) => (
+                            <div key={idx} className="flex items-center justify-between p-2 bg-gray-50 rounded text-sm">
+                              <span className="font-medium">{download.userName}</span>
+                              <span className="text-gray-500 text-xs flex items-center gap-1">
+                                <Calendar className="h-3 w-3" />
+                                {formatDate(download.downloadedAt)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500">No download information available</p>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Download Form Dialog */}
+      <Dialog open={downloadDialogOpen} onOpenChange={setDownloadDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Download Dataset</DialogTitle>
+            <DialogDescription>
+              Please provide your details to download <strong>{selectedDataset?.title}</strong>
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleFormSubmit}>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="name">Name *</Label>
+                <Input
+                  id="name"
+                  placeholder="Enter your full name"
+                  value={formData.name}
+                  onChange={(e) => {
+                    setFormData({ ...formData, name: e.target.value })
+                    if (formErrors.name) setFormErrors({ ...formErrors, name: "" })
+                  }}
+                  className={formErrors.name ? "border-red-500" : ""}
+                />
+                {formErrors.name && (
+                  <p className="text-sm text-red-500">{formErrors.name}</p>
+                )}
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="email">Email *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email address"
+                  value={formData.email}
+                  onChange={(e) => {
+                    setFormData({ ...formData, email: e.target.value })
+                    if (formErrors.email) setFormErrors({ ...formErrors, email: "" })
+                  }}
+                  className={formErrors.email ? "border-red-500" : ""}
+                />
+                {formErrors.email && (
+                  <p className="text-sm text-red-500">{formErrors.email}</p>
+                )}
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="contactNo">Contact Number *</Label>
+                <Input
+                  id="contactNo"
+                  type="tel"
+                  placeholder="Enter your contact number"
+                  value={formData.contactNo}
+                  onChange={(e) => {
+                    setFormData({ ...formData, contactNo: e.target.value })
+                    if (formErrors.contactNo) setFormErrors({ ...formErrors, contactNo: "" })
+                  }}
+                  className={formErrors.contactNo ? "border-red-500" : ""}
+                />
+                {formErrors.contactNo && (
+                  <p className="text-sm text-red-500">{formErrors.contactNo}</p>
+                )}
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setDownloadDialogOpen(false)
+                  setFormData({ name: "", email: "", contactNo: "" })
+                  setFormErrors({ name: "", email: "", contactNo: "" })
+                }}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+                <Download className="h-4 w-4 mr-2" />
+                Download
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* Full Screen Loading Overlay */}
       {downloadingId && (

@@ -77,11 +77,6 @@ const navigationItems = [
     icon: Briefcase
   },
   {
-    title: "Gallery",
-    href: "/admin/gallery",
-    icon: Images
-  },
-  {
     title: "Calendar",
     href: "/admin/calendar",
     icon: Calendar
@@ -100,6 +95,16 @@ const navigationItems = [
     title: "Datasets",
     href: "/admin/datasets",
     icon: Database
+  },
+  {
+    title: "Contact Customers",
+    href: "/admin/contact-customers",
+    icon: Users
+  },
+  {
+    title: "Image Slider",
+    href: "/admin/slider",
+    icon: Images
   }
 ]
 

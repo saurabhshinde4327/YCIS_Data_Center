@@ -77,14 +77,8 @@ export function ClientLogoSlider({ className }: ClientLogoSliderProps) {
         <div className="pointer-events-none absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-background to-transparent z-10" />
         <div className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-background to-transparent z-10" />
 
-        {/* Row 1 */}
-        {renderRow(false, 28)}
-
-        {/* Spacer */}
-        <div className="h-6" />
-
-        {/* Row 2 (reverse, slightly different speed) */}
-        {renderRow(true, 34)}
+        {/* Single Row Slider */}
+        {renderRow(false, 30)}
       </div>
     </div>
   )

@@ -471,6 +471,62 @@ const initializeCoreTables = async () => {
       INDEX idx_created_at (created_at)
     )
   `)
+  // Dataset Download Logs
+  await pool.execute(`
+    CREATE TABLE IF NOT EXISTS dataset_downloads (
+      id BIGINT PRIMARY KEY,
+      dataset_id BIGINT NOT NULL,
+      user_name VARCHAR(255) NOT NULL,
+      user_email VARCHAR(255) NOT NULL,
+      user_contact VARCHAR(255) NOT NULL,
+      downloaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      INDEX idx_dataset_id (dataset_id),
+      INDEX idx_downloaded_at (downloaded_at),
+      INDEX idx_user_email (user_email)
+    )
+  `)
+  // Contact Submissions
+  await pool.execute(`
+    CREATE TABLE IF NOT EXISTS contact_submissions (
+      id BIGINT PRIMARY KEY,
+      first_name VARCHAR(255) NOT NULL,
+      last_name VARCHAR(255) NOT NULL,
+      email VARCHAR(255) NOT NULL,
+      subject VARCHAR(500) NOT NULL,
+      message TEXT NOT NULL,
+      status ENUM('new', 'read', 'replied', 'archived') DEFAULT 'new',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX idx_email (email),
+      INDEX idx_status (status),
+      INDEX idx_created_at (created_at)
+    )
+  `)
+  // Image Slider
+  await pool.execute(`
+    CREATE TABLE IF NOT EXISTS image_slider (
+      id BIGINT PRIMARY KEY,
+      image_url LONGTEXT NOT NULL,
+      description TEXT,
+      display_order INT DEFAULT 0,
+      is_active BOOLEAN DEFAULT TRUE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX idx_display_order (display_order),
+      INDEX idx_is_active (is_active)
+    )
+  `)
+  // Data Center Description
+  await pool.execute(`
+    CREATE TABLE IF NOT EXISTS datacenter_description (
+      id BIGINT PRIMARY KEY,
+      title VARCHAR(255) NOT NULL,
+      description TEXT NOT NULL,
+      is_active BOOLEAN DEFAULT TRUE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )
+  `)
     
     // Try to modify existing gallery table if needed
     try {
@@ -1944,6 +2000,257 @@ export const db = {
     await initializeCoreTables()
     const pool = await getPool()
     await pool.execute(`UPDATE datasets SET downloads = downloads + 1 WHERE id = ?`, [id])
+  },
+
+  // Save dataset download log
+  async saveDatasetDownloadLog(
+    datasetId: string,
+    userInfo: { name: string; email: string; contactNo: string }
+  ): Promise<void> {
+    await initializeCoreTables()
+    const pool = await getPool()
+    const id = Math.floor(Date.now() / 1000) + Math.floor(Math.random() * 100000)
+    await pool.execute(
+      `INSERT INTO dataset_downloads (id, dataset_id, user_name, user_email, user_contact)
+       VALUES (?, ?, ?, ?, ?)`,
+      [id, datasetId, userInfo.name, userInfo.email, userInfo.contactNo]
+    )
+  },
+
+  // Get dataset download logs
+  async getDatasetDownloadLogs(datasetId: string): Promise<Array<{
+    id: string
+    datasetId: string
+    userName: string
+    userEmail: string
+    userContact: string
+    downloadedAt: string
+  }>> {
+    await initializeCoreTables()
+    const pool = await getPool()
+    const [rows] = await pool.query(`
+      SELECT id, dataset_id AS datasetId, user_name AS userName, 
+             user_email AS userEmail, user_contact AS userContact,
+             downloaded_at AS downloadedAt
+      FROM dataset_downloads
+      WHERE dataset_id = ?
+      ORDER BY downloaded_at DESC
+    `, [datasetId])
+    return (rows as any[]).map(r => ({
+      id: String(r.id),
+      datasetId: String(r.datasetId),
+      userName: r.userName,
+      userEmail: r.userEmail,
+      userContact: r.userContact,
+      downloadedAt: r.downloadedAt
+    }))
+  },
+
+  // Save contact submission
+  async saveContactSubmission(data: {
+    firstName: string
+    lastName: string
+    email: string
+    subject: string
+    message: string
+  }): Promise<{ id: string }> {
+    await initializeCoreTables()
+    const pool = await getPool()
+    const id = Math.floor(Date.now() / 1000) + Math.floor(Math.random() * 100000)
+    await pool.execute(
+      `INSERT INTO contact_submissions (id, first_name, last_name, email, subject, message)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [id, data.firstName, data.lastName, data.email, data.subject, data.message]
+    )
+    return { id: String(id) }
+  },
+
+  // Get all contact submissions
+  async getContactSubmissions(): Promise<Array<{
+    id: string
+    firstName: string
+    lastName: string
+    email: string
+    subject: string
+    message: string
+    status: string
+    createdAt: string
+    updatedAt: string
+  }>> {
+    await initializeCoreTables()
+    const pool = await getPool()
+    const [rows] = await pool.query(`
+      SELECT id, first_name AS firstName, last_name AS lastName, email, subject, message,
+             status, created_at AS createdAt, updated_at AS updatedAt
+      FROM contact_submissions
+      ORDER BY created_at DESC
+    `)
+    return (rows as any[]).map(r => ({
+      id: String(r.id),
+      firstName: r.firstName,
+      lastName: r.lastName,
+      email: r.email,
+      subject: r.subject,
+      message: r.message,
+      status: r.status || 'new',
+      createdAt: r.createdAt,
+      updatedAt: r.updatedAt
+    }))
+  },
+
+  // Update contact submission status
+  async updateContactSubmissionStatus(id: string, status: 'new' | 'read' | 'replied' | 'archived'): Promise<boolean> {
+    await initializeCoreTables()
+    const pool = await getPool()
+    await pool.execute(
+      `UPDATE contact_submissions SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+      [status, id]
+    )
+    return true
+  },
+
+  // Delete contact submission
+  async deleteContactSubmission(id: string): Promise<boolean> {
+    await initializeCoreTables()
+    const pool = await getPool()
+    const [result] = await pool.execute(`DELETE FROM contact_submissions WHERE id = ?`, [id])
+    // @ts-ignore
+    return result.affectedRows > 0
+  },
+
+  // Image Slider Operations
+  async getSliderImages(): Promise<Array<{
+    id: string
+    imageUrl: string
+    description: string
+    displayOrder: number
+    isActive: boolean
+    createdAt: string
+    updatedAt: string
+  }>> {
+    await initializeCoreTables()
+    const pool = await getPool()
+    const [rows] = await pool.query(`
+      SELECT id, image_url AS imageUrl, description, display_order AS displayOrder,
+             is_active AS isActive, created_at AS createdAt, updated_at AS updatedAt
+      FROM image_slider
+      WHERE is_active = TRUE
+      ORDER BY display_order ASC, created_at DESC
+    `)
+    return (rows as any[]).map(r => ({
+      id: String(r.id),
+      imageUrl: r.imageUrl,
+      description: r.description || '',
+      displayOrder: Number(r.displayOrder),
+      isActive: Boolean(r.isActive),
+      createdAt: r.createdAt,
+      updatedAt: r.updatedAt
+    }))
+  },
+
+  async createSliderImage(data: {
+    imageUrl: string
+    description?: string
+    displayOrder?: number
+  }): Promise<{ id: string }> {
+    await initializeCoreTables()
+    const pool = await getPool()
+    const id = Math.floor(Date.now() / 1000) + Math.floor(Math.random() * 100000)
+    await pool.execute(
+      `INSERT INTO image_slider (id, image_url, description, display_order)
+       VALUES (?, ?, ?, ?)`,
+      [id, data.imageUrl, data.description || null, data.displayOrder || 0]
+    )
+    return { id: String(id) }
+  },
+
+  async updateSliderImage(id: string, data: {
+    imageUrl?: string
+    description?: string
+    displayOrder?: number
+    isActive?: boolean
+  }): Promise<boolean> {
+    await initializeCoreTables()
+    const pool = await getPool()
+    const fields: string[] = []
+    const values: any[] = []
+    
+    if (data.imageUrl !== undefined) {
+      fields.push('image_url = ?')
+      values.push(data.imageUrl)
+    }
+    if (data.description !== undefined) {
+      fields.push('description = ?')
+      values.push(data.description)
+    }
+    if (data.displayOrder !== undefined) {
+      fields.push('display_order = ?')
+      values.push(data.displayOrder)
+    }
+    if (data.isActive !== undefined) {
+      fields.push('is_active = ?')
+      values.push(data.isActive ? 1 : 0)
+    }
+    
+    if (fields.length === 0) return true
+    
+    values.push(id)
+    await pool.execute(
+      `UPDATE image_slider SET ${fields.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+      values
+    )
+    return true
+  },
+
+  async deleteSliderImage(id: string): Promise<boolean> {
+    await initializeCoreTables()
+    const pool = await getPool()
+    const [result] = await pool.execute(`DELETE FROM image_slider WHERE id = ?`, [id])
+    // @ts-ignore
+    return result.affectedRows > 0
+  },
+
+  // Data Center Description Operations
+  async getDataCenterDescription(): Promise<{
+    id: string
+    title: string
+    description: string
+  } | null> {
+    await initializeCoreTables()
+    const pool = await getPool()
+    const [rows] = await pool.query(`
+      SELECT id, title, description
+      FROM datacenter_description
+      WHERE is_active = TRUE
+      ORDER BY updated_at DESC
+      LIMIT 1
+    `)
+    const r = (rows as any[])[0]
+    if (!r) return null
+    return {
+      id: String(r.id),
+      title: r.title,
+      description: r.description
+    }
+  },
+
+  async saveDataCenterDescription(data: {
+    title: string
+    description: string
+  }): Promise<{ id: string }> {
+    await initializeCoreTables()
+    const pool = await getPool()
+    // Deactivate all existing descriptions
+    await pool.execute(`UPDATE datacenter_description SET is_active = FALSE`)
+    
+    // Create new description
+    const id = Math.floor(Date.now() / 1000) + Math.floor(Math.random() * 100000)
+    await pool.execute(
+      `INSERT INTO datacenter_description (id, title, description)
+       VALUES (?, ?, ?)`,
+      [id, data.title, data.description]
+    )
+    return { id: String(id) }
   }
 }
 

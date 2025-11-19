@@ -101,12 +101,6 @@ export function Navbar() {
                 </NavigationMenuItem>
 
                 <NavigationMenuItem>
-                  <Link href="/gallery" legacyBehavior passHref>
-                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>Gallery</NavigationMenuLink>
-                  </Link>
-                </NavigationMenuItem>
-
-                <NavigationMenuItem>
                   <Link href="/datasets" legacyBehavior passHref>
                     <NavigationMenuLink className={navigationMenuTriggerStyle()}>Public Datasets</NavigationMenuLink>
                   </Link>
@@ -196,10 +190,6 @@ function MobileNav({ setIsOpen }: { setIsOpen: (isOpen: boolean) => void }) {
 
       <Link href="/contact" onClick={() => setIsOpen(false)} className="block text-gray-800 hover:text-blue-600">
         Contact
-      </Link>
-
-      <Link href="/gallery" onClick={() => setIsOpen(false)} className="block text-gray-800 hover:text-blue-600">
-        Gallery
       </Link>
 
       <Link href="/datasets" onClick={() => setIsOpen(false)} className="block text-gray-800 hover:text-blue-600">

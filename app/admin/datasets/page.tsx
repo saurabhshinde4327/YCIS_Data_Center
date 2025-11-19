@@ -9,9 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "sonner"
 import { DataCenterLayout } from "@/components/datacenter-layout"
-import { Upload, X, Database, Download, Eye, Trash2, FileText, Info } from "lucide-react"
+import { Upload, X, Database, Download, Eye, Trash2, FileText, Info, Users, Calendar } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 interface Dataset {
   id: string
@@ -41,6 +43,16 @@ export default function DatasetsAdminPage() {
   const [uploadProgress, setUploadProgress] = useState<string>("")
   const [datasets, setDatasets] = useState<Dataset[]>([])
   const [isLoadingList, setIsLoadingList] = useState(false)
+  const [downloadHistoryOpen, setDownloadHistoryOpen] = useState(false)
+  const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null)
+  const [downloadLogs, setDownloadLogs] = useState<Array<{
+    id: string
+    userName: string
+    userEmail: string
+    userContact: string
+    downloadedAt: string
+  }>>([])
+  const [loadingLogs, setLoadingLogs] = useState(false)
 
   const categories = [
     "General",
@@ -183,6 +195,34 @@ export default function DatasetsAdminPage() {
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Failed to delete dataset')
     }
+  }
+
+  const handleViewDownloadHistory = async (dataset: Dataset) => {
+    setSelectedDataset(dataset)
+    setDownloadHistoryOpen(true)
+    setLoadingLogs(true)
+    try {
+      const res = await fetch(`/api/datasets/${dataset.id}/downloads`)
+      if (!res.ok) throw new Error('Failed to load download history')
+      const data = await res.json()
+      setDownloadLogs(data || [])
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to load download history')
+      setDownloadLogs([])
+    } finally {
+      setLoadingLogs(false)
+    }
+  }
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
   }
 
   useEffect(() => {
@@ -395,7 +435,7 @@ export default function DatasetsAdminPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {datasets.map(dataset => (
-                <div key={dataset.id} className="border-2 border-gray-200 rounded-lg p-4 bg-white hover:border-blue-400 transition-all hover:shadow-lg">
+                <div key={dataset.id} className="border-2 border-gray-200 rounded-lg p-4 bg-white hover:border-blue-400 transition-all hover:shadow-lg cursor-pointer" onClick={() => handleViewDownloadHistory(dataset)}>
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
                       <h3 className="text-lg font-semibold text-gray-900 mb-1 line-clamp-2">
@@ -433,12 +473,25 @@ export default function DatasetsAdminPage() {
                   <div className="flex gap-2">
                     <Button 
                       size="sm" 
-                      variant="destructive" 
-                      onClick={() => handleDelete(dataset.id)}
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleViewDownloadHistory(dataset)
+                      }}
                       className="flex-1"
                     >
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      Delete
+                      <Users className="h-4 w-4 mr-1" />
+                      View Downloads ({dataset.downloads})
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="destructive" 
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDelete(dataset.id)
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
@@ -446,6 +499,66 @@ export default function DatasetsAdminPage() {
             </div>
           )}
         </div>
+
+        {/* Download History Dialog */}
+        <Dialog open={downloadHistoryOpen} onOpenChange={setDownloadHistoryOpen}>
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Download className="h-5 w-5" />
+                Download History - {selectedDataset?.title}
+              </DialogTitle>
+              <DialogDescription>
+                View all users who have downloaded this dataset
+              </DialogDescription>
+            </DialogHeader>
+            
+            {loadingLogs ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent"></div>
+              </div>
+            ) : downloadLogs.length === 0 ? (
+              <div className="text-center py-12">
+                <Users className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-lg font-semibold text-gray-600 mb-2">No downloads yet</p>
+                <p className="text-sm text-gray-500">This dataset hasn't been downloaded by anyone yet.</p>
+              </div>
+            ) : (
+              <div className="mt-4">
+                <div className="mb-4 p-3 bg-blue-50 rounded-lg">
+                  <p className="text-sm text-blue-900">
+                    <strong>Total Downloads:</strong> {downloadLogs.length} user{downloadLogs.length !== 1 ? 's' : ''}
+                  </p>
+                </div>
+                <div className="border rounded-lg overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Contact</TableHead>
+                        <TableHead>Downloaded At</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {downloadLogs.map((log) => (
+                        <TableRow key={log.id}>
+                          <TableCell className="font-medium">{log.userName}</TableCell>
+                          <TableCell>{log.userEmail}</TableCell>
+                          <TableCell>{log.userContact}</TableCell>
+                          <TableCell className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 text-gray-400" />
+                            {formatDate(log.downloadedAt)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   )

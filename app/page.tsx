@@ -3,13 +3,17 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { HeroSection } from "@/components/hero-section"
 import { Footer } from "@/components/footer"
 import { Navbar } from "@/components/navbar"
 import { ClientLogoSlider } from "@/components/client-logo-slider"
 import { AboutInstitute } from "@/components/about-institute"
 import { ShowcaseProjects } from "@/components/showcase-projects"
+import { ImageSliderSection } from "@/components/image-slider-section"
 import SplashIntro from "@/components/SplashIntro"
+import { Check, ArrowRight } from "lucide-react"
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
 
 const technologies = [
   { name: "Linux", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Tux.svg/1200px-Tux.svg.png" },
@@ -79,6 +83,265 @@ Easily manage your websites, databases, and emails with powerful tools and exper
 Whether you're a startup or enterprise, we make hosting simple, seamless, and secure."
           description="Providing reliable hosting solutions for your digital needs"
         />
+
+        {/* Popular Packages Section */}
+        <section className="py-16 md:py-24 bg-gradient-to-b from-white to-blue-50">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                Most Popular Packages
+              </h2>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                Choose from our most popular hosting solutions designed to meet your business needs
+              </p>
+            </div>
+
+            {/* Mobile Horizontal Slider */}
+            <div className="block md:hidden mb-8">
+              <Carousel 
+                opts={{
+                  align: "start",
+                  loop: true,
+                }}
+                className="w-full"
+              >
+                <CarouselContent>
+                  {/* Web Hosting - Premium Plan */}
+                  <CarouselItem>
+                    <div className="p-1">
+                      <Card className="flex flex-col hover:shadow-xl transition-shadow border-2 border-gray-200">
+                        <CardHeader>
+                          <CardTitle>Premium Web Hosting</CardTitle>
+                          <CardDescription>Perfect for growing businesses</CardDescription>
+                        </CardHeader>
+                        <CardContent className="flex-1">
+                          <ul className="space-y-2">
+                            {["50 GB Storage", "Unlimited Bandwidth", "Free SSL Certificate", "24/7 Support", "Weekly Backups"].map((feature, idx) => (
+                              <li key={idx} className="flex items-center gap-2 text-sm">
+                                <Check className="h-4 w-4 text-green-600 flex-shrink-0" />
+                                <span>{feature}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </CardContent>
+                        <CardFooter>
+                          <Link href="/packages/web-hosting" className="w-full">
+                            <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                              View Details <ArrowRight className="ml-2 h-4 w-4" />
+                            </Button>
+                          </Link>
+                        </CardFooter>
+                      </Card>
+                    </div>
+                  </CarouselItem>
+
+                  {/* VPS - KVM 3 */}
+                  <CarouselItem>
+                    <div className="p-1">
+                      <Card className="flex flex-col hover:shadow-xl transition-shadow border-2 border-gray-200">
+                        <CardHeader>
+                          <CardTitle>KVM 3 VPS</CardTitle>
+                          <CardDescription>High-performance VPS solution</CardDescription>
+                        </CardHeader>
+                        <CardContent className="flex-1">
+                          <ul className="space-y-2">
+                            {["16 GB RAM", "6 vCPU Processor", "1 TB SSD Storage", "Unlimited Bandwidth", "24/7 Support"].map((feature, idx) => (
+                              <li key={idx} className="flex items-center gap-2 text-sm">
+                                <Check className="h-4 w-4 text-green-600 flex-shrink-0" />
+                                <span>{feature}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </CardContent>
+                        <CardFooter>
+                          <Link href="/packages/vps" className="w-full">
+                            <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                              View Details <ArrowRight className="ml-2 h-4 w-4" />
+                            </Button>
+                          </Link>
+                        </CardFooter>
+                      </Card>
+                    </div>
+                  </CarouselItem>
+
+                  {/* Domain Email */}
+                  <CarouselItem>
+                    <div className="p-1">
+                      <Card className="flex flex-col hover:shadow-xl transition-shadow border-2 border-gray-200">
+                        <CardHeader>
+                          <CardTitle>Domain Email</CardTitle>
+                          <CardDescription>Professional email solutions</CardDescription>
+                        </CardHeader>
+                        <CardContent className="flex-1">
+                          <ul className="space-y-2">
+                            {["Custom Domain Email", "Multiple Mailboxes", "Email Forwarding", "Spam Protection", "Webmail Access"].map((feature, idx) => (
+                              <li key={idx} className="flex items-center gap-2 text-sm">
+                                <Check className="h-4 w-4 text-green-600 flex-shrink-0" />
+                                <span>{feature}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </CardContent>
+                        <CardFooter>
+                          <Link href="/packages/domain-email" className="w-full">
+                            <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                              View Details <ArrowRight className="ml-2 h-4 w-4" />
+                            </Button>
+                          </Link>
+                        </CardFooter>
+                      </Card>
+                    </div>
+                  </CarouselItem>
+
+                  {/* Database Hosting */}
+                  <CarouselItem>
+                    <div className="p-1">
+                      <Card className="flex flex-col hover:shadow-xl transition-shadow border-2 border-gray-200">
+                        <CardHeader>
+                          <CardTitle>Database Hosting</CardTitle>
+                          <CardDescription>Secure database solutions</CardDescription>
+                        </CardHeader>
+                        <CardContent className="flex-1">
+                          <ul className="space-y-2">
+                            {["MySQL/MariaDB", "PostgreSQL Support", "Automated Backups", "High Availability", "Performance Monitoring"].map((feature, idx) => (
+                              <li key={idx} className="flex items-center gap-2 text-sm">
+                                <Check className="h-4 w-4 text-green-600 flex-shrink-0" />
+                                <span>{feature}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </CardContent>
+                        <CardFooter>
+                          <Link href="/packages/database-hosting" className="w-full">
+                            <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                              View Details <ArrowRight className="ml-2 h-4 w-4" />
+                            </Button>
+                          </Link>
+                        </CardFooter>
+                      </Card>
+                    </div>
+                  </CarouselItem>
+                </CarouselContent>
+                <CarouselPrevious className="left-2" />
+                <CarouselNext className="right-2" />
+              </Carousel>
+            </div>
+
+            {/* Desktop Grid View */}
+            <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              {/* Web Hosting - Premium Plan */}
+              <Card className="flex flex-col hover:shadow-xl transition-shadow border-2 border-gray-200">
+                <CardHeader>
+                  <CardTitle>Premium Web Hosting</CardTitle>
+                  <CardDescription>Perfect for growing businesses</CardDescription>
+                </CardHeader>
+                <CardContent className="flex-1">
+                  <ul className="space-y-2">
+                    {["50 GB Storage", "Unlimited Bandwidth", "Free SSL Certificate", "24/7 Support", "Weekly Backups"].map((feature, idx) => (
+                      <li key={idx} className="flex items-center gap-2 text-sm">
+                        <Check className="h-4 w-4 text-green-600 flex-shrink-0" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+                <CardFooter>
+                  <Link href="/packages/web-hosting" className="w-full">
+                    <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                      View Details <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                </CardFooter>
+              </Card>
+
+              {/* VPS - KVM 3 */}
+              <Card className="flex flex-col hover:shadow-xl transition-shadow border-2 border-gray-200">
+                <CardHeader>
+                  <CardTitle>KVM 3 VPS</CardTitle>
+                  <CardDescription>High-performance VPS solution</CardDescription>
+                </CardHeader>
+                <CardContent className="flex-1">
+                  <ul className="space-y-2">
+                    {["16 GB RAM", "6 vCPU Processor", "1 TB SSD Storage", "Unlimited Bandwidth", "24/7 Support"].map((feature, idx) => (
+                      <li key={idx} className="flex items-center gap-2 text-sm">
+                        <Check className="h-4 w-4 text-green-600 flex-shrink-0" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+                <CardFooter>
+                  <Link href="/packages/vps" className="w-full">
+                    <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                      View Details <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                </CardFooter>
+              </Card>
+
+              {/* Domain Email */}
+              <Card className="flex flex-col hover:shadow-xl transition-shadow border-2 border-gray-200">
+                <CardHeader>
+                  <CardTitle>Domain Email</CardTitle>
+                  <CardDescription>Professional email solutions</CardDescription>
+                </CardHeader>
+                <CardContent className="flex-1">
+                  <ul className="space-y-2">
+                    {["Custom Domain Email", "Multiple Mailboxes", "Email Forwarding", "Spam Protection", "Webmail Access"].map((feature, idx) => (
+                      <li key={idx} className="flex items-center gap-2 text-sm">
+                        <Check className="h-4 w-4 text-green-600 flex-shrink-0" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+                <CardFooter>
+                  <Link href="/packages/domain-email" className="w-full">
+                    <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                      View Details <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                </CardFooter>
+              </Card>
+
+              {/* Database Hosting */}
+              <Card className="flex flex-col hover:shadow-xl transition-shadow border-2 border-gray-200">
+                <CardHeader>
+                  <CardTitle>Database Hosting</CardTitle>
+                  <CardDescription>Secure database solutions</CardDescription>
+                </CardHeader>
+                <CardContent className="flex-1">
+                  <ul className="space-y-2">
+                    {["MySQL/MariaDB", "PostgreSQL Support", "Automated Backups", "High Availability", "Performance Monitoring"].map((feature, idx) => (
+                      <li key={idx} className="flex items-center gap-2 text-sm">
+                        <Check className="h-4 w-4 text-green-600 flex-shrink-0" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+                <CardFooter>
+                  <Link href="/packages/database-hosting" className="w-full">
+                    <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                      View Details <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                </CardFooter>
+              </Card>
+            </div>
+
+            <div className="text-center mt-8">
+              <Link href="/contact">
+                <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg">
+                  Contact Us for Custom Solutions
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Image Slider and Data Center Description Section */}
+        <ImageSliderSection />
 
         <ShowcaseProjects />
 

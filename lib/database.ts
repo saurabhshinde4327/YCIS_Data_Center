@@ -156,6 +156,24 @@ export interface GalleryImage {
   updatedAt: string
 }
 
+export interface Dataset {
+  id: string
+  title: string
+  description: string
+  fileUrl: string
+  fileName: string
+  fileSize: number
+  fileType: string
+  category: string
+  tags: string[]
+  downloads: number
+  views: number
+  isPublic: boolean
+  uploadedBy?: string
+  createdAt: string
+  updatedAt: string
+}
+
 // MySQL configuration (same as projects API)
 const databaseConfig = {
   host: process.env.DB_HOST || '91.108.105.168',
@@ -428,6 +446,29 @@ const initializeCoreTables = async () => {
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       INDEX idx_category (category),
       INDEX idx_is_visible (is_visible)
+    )
+  `)
+  // Datasets
+  await pool.execute(`
+    CREATE TABLE IF NOT EXISTS datasets (
+      id BIGINT PRIMARY KEY,
+      title VARCHAR(255) NOT NULL,
+      description TEXT NOT NULL,
+      file_url LONGTEXT NOT NULL,
+      file_name VARCHAR(255) NOT NULL,
+      file_size BIGINT NOT NULL,
+      file_type VARCHAR(100) NOT NULL,
+      category VARCHAR(100) NOT NULL,
+      tags JSON,
+      downloads INT DEFAULT 0,
+      views INT DEFAULT 0,
+      is_public BOOLEAN DEFAULT TRUE,
+      uploaded_by VARCHAR(255),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX idx_category (category),
+      INDEX idx_is_public (is_public),
+      INDEX idx_created_at (created_at)
     )
   `)
     
@@ -1734,6 +1775,175 @@ export const db = {
     const [result] = await pool.execute(`DELETE FROM gallery WHERE id = ?`, [id])
     // @ts-ignore
     return result.affectedRows > 0
+  },
+
+  // Get all datasets
+  async getDatasets(publicOnly: boolean = false): Promise<Dataset[]> {
+    await initializeCoreTables()
+    const pool = await getPool()
+    let query = `
+      SELECT id, title, description, file_url AS fileUrl, file_name AS fileName, 
+             file_size AS fileSize, file_type AS fileType, category, tags, 
+             downloads, views, is_public AS isPublic, uploaded_by AS uploadedBy,
+             created_at AS createdAt, updated_at AS updatedAt 
+      FROM datasets
+    `
+    const params: any[] = []
+    if (publicOnly) {
+      query += ` WHERE is_public = TRUE`
+    }
+    query += ` ORDER BY created_at DESC`
+    
+    const [rows] = await pool.query(query, params)
+    return (rows as any[]).map(r => ({
+      id: String(r.id),
+      title: r.title,
+      description: r.description,
+      fileUrl: r.fileUrl,
+      fileName: r.fileName,
+      fileSize: Number(r.fileSize),
+      fileType: r.fileType,
+      category: r.category,
+      tags: r.tags ? JSON.parse(r.tags) : [],
+      downloads: r.downloads || 0,
+      views: r.views || 0,
+      isPublic: Boolean(r.isPublic),
+      uploadedBy: r.uploadedBy || undefined,
+      createdAt: r.createdAt,
+      updatedAt: r.updatedAt
+    }))
+  },
+
+  // Get dataset by ID
+  async getDataset(id: string): Promise<Dataset | null> {
+    await initializeCoreTables()
+    const pool = await getPool()
+    const [rows] = await pool.query(`
+      SELECT id, title, description, file_url AS fileUrl, file_name AS fileName, 
+             file_size AS fileSize, file_type AS fileType, category, tags, 
+             downloads, views, is_public AS isPublic, uploaded_by AS uploadedBy,
+             created_at AS createdAt, updated_at AS updatedAt 
+      FROM datasets WHERE id = ? LIMIT 1
+    `, [id])
+    const r = (rows as any[])[0]
+    if (!r) return null
+    return {
+      id: String(r.id),
+      title: r.title,
+      description: r.description,
+      fileUrl: r.fileUrl,
+      fileName: r.fileName,
+      fileSize: Number(r.fileSize),
+      fileType: r.fileType,
+      category: r.category,
+      tags: r.tags ? JSON.parse(r.tags) : [],
+      downloads: r.downloads || 0,
+      views: r.views || 0,
+      isPublic: Boolean(r.isPublic),
+      uploadedBy: r.uploadedBy || undefined,
+      createdAt: r.createdAt,
+      updatedAt: r.updatedAt
+    }
+  },
+
+  // Create new dataset
+  async createDataset(dataset: Omit<Dataset, 'id' | 'createdAt' | 'updatedAt' | 'downloads' | 'views'>): Promise<Dataset> {
+    await initializeCoreTables()
+    const pool = await getPool()
+    const id = Math.floor(Date.now() / 1000) + Math.floor(Math.random() * 100000)
+    const now = new Date()
+    await pool.execute(
+      `INSERT INTO datasets (id, title, description, file_url, file_name, file_size, file_type, category, tags, downloads, views, is_public, uploaded_by, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        id,
+        dataset.title,
+        dataset.description,
+        dataset.fileUrl,
+        dataset.fileName,
+        dataset.fileSize,
+        dataset.fileType,
+        dataset.category,
+        JSON.stringify(dataset.tags),
+        0, // downloads
+        0, // views
+        dataset.isPublic ? 1 : 0,
+        dataset.uploadedBy || null,
+        now,
+        now
+      ]
+    )
+    return { 
+      ...dataset, 
+      id: String(id), 
+      downloads: 0,
+      views: 0,
+      createdAt: now.toISOString(), 
+      updatedAt: now.toISOString() 
+    }
+  },
+
+  // Update dataset
+  async updateDataset(id: string, updates: Partial<Dataset>): Promise<Dataset | null> {
+    await initializeCoreTables()
+    const pool = await getPool()
+    const fields: string[] = []
+    const values: any[] = []
+    const map: Record<string, string> = {
+      title: 'title',
+      description: 'description',
+      fileUrl: 'file_url',
+      fileName: 'file_name',
+      fileSize: 'file_size',
+      fileType: 'file_type',
+      category: 'category',
+      tags: 'tags',
+      downloads: 'downloads',
+      views: 'views',
+      isPublic: 'is_public',
+      uploadedBy: 'uploaded_by'
+    }
+    Object.entries(updates).forEach(([k, v]) => {
+      if (v === undefined) return
+      const col = map[k]
+      if (col) {
+        fields.push(`${col} = ?`)
+        if (k === 'tags') {
+          values.push(JSON.stringify(v))
+        } else if (k === 'isPublic') {
+          values.push(v ? 1 : 0)
+        } else {
+          values.push(v)
+        }
+      }
+    })
+    if (fields.length === 0) return await this.getDataset(id)
+    values.push(id)
+    await pool.execute(`UPDATE datasets SET ${fields.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, values)
+    return await this.getDataset(id)
+  },
+
+  // Delete dataset
+  async deleteDataset(id: string): Promise<boolean> {
+    await initializeCoreTables()
+    const pool = await getPool()
+    const [result] = await pool.execute(`DELETE FROM datasets WHERE id = ?`, [id])
+    // @ts-ignore
+    return result.affectedRows > 0
+  },
+
+  // Increment dataset views
+  async incrementDatasetViews(id: string): Promise<void> {
+    await initializeCoreTables()
+    const pool = await getPool()
+    await pool.execute(`UPDATE datasets SET views = views + 1 WHERE id = ?`, [id])
+  },
+
+  // Increment dataset downloads
+  async incrementDatasetDownloads(id: string): Promise<void> {
+    await initializeCoreTables()
+    const pool = await getPool()
+    await pool.execute(`UPDATE datasets SET downloads = downloads + 1 WHERE id = ?`, [id])
   }
 }
 

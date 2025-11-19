@@ -26,7 +26,8 @@ import {
   Key,
   ChevronLeft,
   ChevronRight,
-  GraduationCap
+  GraduationCap,
+  Database
 } from "lucide-react"
 
 const navigationItems = [
@@ -94,6 +95,11 @@ const navigationItems = [
     title: "Intern Students",
     href: "/admin/intern-students",
     icon: GraduationCap
+  },
+  {
+    title: "Datasets",
+    href: "/admin/datasets",
+    icon: Database
   }
 ]
 

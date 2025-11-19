@@ -21,7 +21,7 @@ export default function SplashIntro() {
         alt="YCIS Data Center"
         className="w-32 h-32 sm:w-40 sm:h-40 mb-4 animate-bounce-slow"
       />
-      <h1 className="text-3xl sm:text-5xl font-bold text-blue-900 text-center animate-fadeInSlow">
+      <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-900 text-center animate-fadeInSlow">
         YCIS Data & Technology Center
       </h1>
 

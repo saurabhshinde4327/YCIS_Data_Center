@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { Rocket, ExternalLink } from "lucide-react"
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
+import Image from "next/image"
 
 interface ShowcaseProject {
   id: string
@@ -42,14 +43,30 @@ export function ShowcaseProjects() {
   }
 
   return (
-    <section className="py-16 md:py-24 bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-      <div className="container mx-auto px-4">
+    <section className="py-16 md:py-24 relative overflow-hidden">
+      {/* Background Image */}
+      <div className="absolute inset-0 z-0">
+        <Image
+          src="/abstract_black_background.jpg"
+          alt="Data Center Background"
+          fill
+          className="object-cover"
+          priority
+          quality={90}
+        />
+        {/* Overlay for better text readability */}
+        <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-blue-900/60 to-indigo-900/70"></div>
+        {/* Additional subtle overlay for depth */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
+      </div>
+
+      <div className="container mx-auto px-4 relative z-10">
         {/* Section Header */}
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 drop-shadow-lg">
             Our Data Center Projects
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-lg text-blue-100 max-w-2xl mx-auto drop-shadow-md">
             Explore the innovative applications and systems hosted in our state-of-the-art data center
           </p>
         </div>
@@ -67,7 +84,7 @@ export function ShowcaseProjects() {
               {projects.map((project) => (
                 <CarouselItem key={project.id}>
                   <div className="p-1">
-                    <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+                    <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl overflow-hidden border border-white/20">
                       {/* Project Image/Screenshot */}
                       {project.projectImage ? (
                         <div className="relative h-48 w-full overflow-hidden bg-gray-100">
@@ -156,7 +173,7 @@ export function ShowcaseProjects() {
           {projects.map((project) => (
             <div
               key={project.id}
-              className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden border border-gray-100"
+              className="bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden border border-white/20"
             >
               {/* Project Image/Screenshot */}
               {project.projectImage ? (

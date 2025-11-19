@@ -226,7 +226,7 @@ export function Footer() {
       {/* Copyright */}
       <div className="container mt-8 pt-8 border-t">
         <p className="text-center text-sm text-muted-foreground">
-          &copy; {new Date().getFullYear()} YCIS Data & Technology Center. All rights reserved.
+          &copy; {new Date().getFullYear()} YCIS Data & Technology Center
         </p>
       </div>
     </footer>

@@ -68,8 +68,8 @@ const config = {
           to: { height: "0" },
         },
         fadeIn: {
-          "0%": { opacity: "0" },
-          "100%": { opacity: "1" },
+          "0%": { opacity: "0", transform: "translateY(20px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
         },
         slideUp: {
           "0%": { transform: "translateY(20px)", opacity: "0" },
@@ -80,13 +80,28 @@ const config = {
           "90%": { opacity: "1" },
           "100%": { opacity: "0" },
         },
+        "slide-in-left": {
+          "0%": { transform: "translateX(-30px)", opacity: "0" },
+          "100%": { transform: "translateX(0)", opacity: "1" },
+        },
+        "slide-in-right": {
+          "0%": { transform: "translateX(30px)", opacity: "0" },
+          "100%": { transform: "translateX(0)", opacity: "1" },
+        },
+        "spin-slow": {
+          "0%": { transform: "rotate(0deg)" },
+          "100%": { transform: "rotate(360deg)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        fadeIn: "fadeIn 1s ease-out forwards",
+        fadeIn: "fadeIn 0.7s ease-out forwards",
         slideUp: "slideUp 0.8s ease-out forwards",
-        fadeOut: "fadeOut 4s ease-in-out forwards", // 👈 Slower fadeOut
+        fadeOut: "fadeOut 4s ease-in-out forwards",
+        "slide-in-left": "slide-in-left 0.7s ease-out forwards",
+        "slide-in-right": "slide-in-right 0.7s ease-out forwards",
+        "spin-slow": "spin-slow 8s linear infinite",
       },
     },
   },

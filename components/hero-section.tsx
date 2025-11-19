@@ -4,6 +4,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
+import { Navbar } from "@/components/navbar";
 
 interface HeroSectionProps {
   title: string;
@@ -14,13 +15,18 @@ interface HeroSectionProps {
 export function HeroSection({ title, subtitle, description }: HeroSectionProps) {
   return (
     <section className="relative w-full overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-800 text-white">
+      {/* Navbar Overlay */}
+      <div className="absolute top-0 left-0 right-0 z-50">
+        <Navbar />
+      </div>
+
       {/* Background Graphics */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute left-1/2 top-0 w-[140%] h-full -translate-x-1/2 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-600/10 via-purple-800/10 to-transparent blur-2xl" />
         <div className="absolute inset-0 bg-[url('/pattern.svg')] opacity-5" />
       </div>
 
-      <div className="container relative z-10 px-4 py-20 md:py-32 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      <div className="container relative z-10 px-4 pt-32 pb-20 md:pt-40 md:pb-32 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
         {/* Left Content */}
         <div className="space-y-6 text-center lg:text-left">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight animate-fade-in">

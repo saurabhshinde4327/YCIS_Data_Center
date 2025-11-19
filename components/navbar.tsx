@@ -58,25 +58,25 @@ export function Navbar() {
   return (
     <>
       <header className={cn(
-        "sticky top-0 z-50 w-full border-b transition-all duration-300",
+        "sticky top-0 z-50 w-full transition-all duration-300",
         isScrolled 
-          ? "bg-white/95 backdrop-blur-md shadow-md" 
-          : "bg-background"
+          ? "bg-black/20 backdrop-blur-lg shadow-lg border-b border-white/10" 
+          : "bg-transparent"
       )}>
         <div className="container flex h-16 items-center justify-between">
           {/* Logo with image and text */}
-          <Link href="/" className="flex items-center space-x-2 transition-all duration-300">
+          <Link href="/" className="flex items-center space-x-2 transition-all duration-300 group">
             <Logo 
               width={40} 
               height={40} 
               className={cn(
-                "rounded-lg shadow-sm transition-all duration-300",
-                isScrolled ? "h-8 w-8" : "h-10 w-10"
+                "rounded-lg shadow-sm transition-all duration-300 filter brightness-0 invert",
+                isScrolled ? "h-8 w-8 group-hover:scale-110" : "h-10 w-10 group-hover:scale-110"
               )} 
             />
             <div>
               <span className={cn(
-                "font-bold text-blue-900 block transition-all duration-300",
+                "font-bold text-white block transition-all duration-300 drop-shadow-lg",
                 isScrolled ? "text-lg" : "text-xl"
               )}>
                 YCIS Data & Technology Center
@@ -90,25 +90,45 @@ export function Navbar() {
               <NavigationMenuList className="flex space-x-6">
                 <NavigationMenuItem>
                   <Link href="/packages" legacyBehavior passHref>
-                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>Packages</NavigationMenuLink>
+                    <NavigationMenuLink className={cn(
+                      navigationMenuTriggerStyle(),
+                      "text-white hover:text-blue-300 hover:bg-white/10 bg-transparent border-transparent transition-all duration-300"
+                    )}>
+                      Packages
+                    </NavigationMenuLink>
                   </Link>
                 </NavigationMenuItem>
 
                 <NavigationMenuItem>
                   <Link href="/contact" legacyBehavior passHref>
-                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>Contact</NavigationMenuLink>
+                    <NavigationMenuLink className={cn(
+                      navigationMenuTriggerStyle(),
+                      "text-white hover:text-blue-300 hover:bg-white/10 bg-transparent border-transparent transition-all duration-300"
+                    )}>
+                      Contact
+                    </NavigationMenuLink>
                   </Link>
                 </NavigationMenuItem>
 
                 <NavigationMenuItem>
                   <Link href="/datasets" legacyBehavior passHref>
-                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>Public Datasets</NavigationMenuLink>
+                    <NavigationMenuLink className={cn(
+                      navigationMenuTriggerStyle(),
+                      "text-white hover:text-blue-300 hover:bg-white/10 bg-transparent border-transparent transition-all duration-300"
+                    )}>
+                      Public Datasets
+                    </NavigationMenuLink>
                   </Link>
                 </NavigationMenuItem>
 
                 <NavigationMenuItem>
                   <Link href="/about" legacyBehavior passHref>
-                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>About</NavigationMenuLink>
+                    <NavigationMenuLink className={cn(
+                      navigationMenuTriggerStyle(),
+                      "text-white hover:text-blue-300 hover:bg-white/10 bg-transparent border-transparent transition-all duration-300"
+                    )}>
+                      About
+                    </NavigationMenuLink>
                   </Link>
                 </NavigationMenuItem>
               </NavigationMenuList>
@@ -116,7 +136,7 @@ export function Navbar() {
             
             {/* Client Login Button */}
             <Link href="/client/signin">
-              <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-md">
+              <button className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-5 py-2.5 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl border border-white/30 hover:border-white/50 hover:scale-105">
                 Client Login
               </button>
             </Link>
@@ -125,11 +145,11 @@ export function Navbar() {
           {/* Mobile menu trigger */}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
-              <button className="md:hidden p-2">
+              <button className="md:hidden p-2 text-white hover:bg-white/10 rounded-lg transition-all duration-300">
                 <Menu className="h-6 w-6" />
               </button>
             </SheetTrigger>
-            <SheetContent side="right" className="bg-white">
+            <SheetContent side="right" className="bg-gradient-to-b from-gray-900 to-gray-800 border-gray-700">
               <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
               <MobileNav setIsOpen={setIsOpen} />
             </SheetContent>
@@ -173,36 +193,36 @@ ListItem.displayName = "ListItem"
 function MobileNav({ setIsOpen }: { setIsOpen: (isOpen: boolean) => void }) {
   return (
     <div className="p-6 text-base font-medium space-y-4">
-      <Link href="/" className="flex items-center space-x-2 text-xl font-bold text-blue-900" onClick={() => setIsOpen(false)}>
+      <Link href="/" className="flex items-center space-x-2 text-xl font-bold text-white" onClick={() => setIsOpen(false)}>
         <Logo 
           width={32} 
           height={32} 
-          className="h-8 w-8 rounded-lg shadow-sm" 
+          className="h-8 w-8 rounded-lg shadow-sm filter brightness-0 invert" 
         />
         <div>
           <span className="block">YCIS Data & Technology Center</span>
         </div>
       </Link>
 
-      <Link href="/packages" onClick={() => setIsOpen(false)} className="block text-gray-800 hover:text-blue-600">
+      <Link href="/packages" onClick={() => setIsOpen(false)} className="block text-white hover:text-blue-300 transition-colors duration-300 py-2 border-b border-gray-700 hover:border-blue-500">
         Packages
       </Link>
 
-      <Link href="/contact" onClick={() => setIsOpen(false)} className="block text-gray-800 hover:text-blue-600">
+      <Link href="/contact" onClick={() => setIsOpen(false)} className="block text-white hover:text-blue-300 transition-colors duration-300 py-2 border-b border-gray-700 hover:border-blue-500">
         Contact
       </Link>
 
-      <Link href="/datasets" onClick={() => setIsOpen(false)} className="block text-gray-800 hover:text-blue-600">
+      <Link href="/datasets" onClick={() => setIsOpen(false)} className="block text-white hover:text-blue-300 transition-colors duration-300 py-2 border-b border-gray-700 hover:border-blue-500">
         Public Datasets
       </Link>
 
-      <Link href="/about" onClick={() => setIsOpen(false)} className="block text-gray-800 hover:text-blue-600">
+      <Link href="/about" onClick={() => setIsOpen(false)} className="block text-white hover:text-blue-300 transition-colors duration-300 py-2 border-b border-gray-700 hover:border-blue-500">
         About
       </Link>
 
       {/* Client Login Button for Mobile */}
       <Link href="/client/signin" onClick={() => setIsOpen(false)}>
-        <button className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium transition-colors shadow-md mt-4">
+        <button className="w-full bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-4 py-3 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl border border-white/30 hover:border-white/50 mt-4">
           Client Login
         </button>
       </Link>

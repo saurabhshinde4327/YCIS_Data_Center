@@ -180,6 +180,7 @@ export function Footer() {
               <address className="not-italic text-sm text-muted-foreground space-y-2">
                 <p>Yashavantrao Chavan Institute of Science</p>
                 <p>Satara, Maharashtra</p>
+                <p>Name: Saurabh Dhananjay Shinde</p>
                 <p>Email: datacenter@ycis.ac.in</p>
                 <p>Phone: +91 8668428513</p>
                 <p>

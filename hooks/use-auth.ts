@@ -9,7 +9,7 @@ interface AuthState {
   isAuthenticated: boolean
 }
 
-export function useAuth(requiredRole?: 'admin' | 'client') {
+export function useAuth(requiredRole?: 'admin' | 'client' | 'sms_admin') {
   const router = useRouter()
   const [authState, setAuthState] = useState<AuthState>({
     user: null,

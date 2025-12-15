@@ -1,30 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { smsDb } from '@/lib/smsDatabase'
 import { signToken } from '@/lib/jwt'
-import { adminDb } from '@/lib/adminDatabase'
 
-// Force this route to use Node.js runtime instead of Edge runtime
 export const runtime = 'nodejs'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { email, password } = body
+    const { username, password } = body
 
-    console.log('Admin login attempt:', { email, passwordLength: password?.length })
-
-    // Validate required fields
-    if (!email || !password) {
+    if (!username || !password) {
       return NextResponse.json(
-        { error: 'Email and password are required' },
+        { error: 'Username and password are required' },
         { status: 400 }
       )
     }
 
-    const admin = await adminDb.getAdminByEmail(email)
+    const admin = await smsDb.getAdminByIdentifier(username)
 
-    if (!admin || admin.password !== password) {
+    if (!admin || admin.password !== password || admin.active === false) {
       return NextResponse.json(
-        { error: 'Invalid email or password' },
+        { error: 'Invalid username or password' },
         { status: 401 }
       )
     }
@@ -33,23 +29,22 @@ export async function POST(request: NextRequest) {
       id: admin.id,
       email: admin.email,
       name: admin.name,
-      role: 'admin'
+      role: 'sms_admin'
     })
-
-    console.log('Admin login successful')
 
     return NextResponse.json({
       success: true,
       token,
       admin: {
         id: admin.id,
+        username: admin.username,
         email: admin.email,
         name: admin.name,
-        role: admin.role
+        role: 'sms_admin'
       }
     })
   } catch (error) {
-    console.error('Error signing in admin:', error)
+    console.error('SMS admin sign-in failed:', error)
     return NextResponse.json(
       { error: 'Failed to sign in' },
       { status: 500 }

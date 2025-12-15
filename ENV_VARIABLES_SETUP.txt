@@ -28,12 +28,73 @@ CONTACT_FROM_EMAIL=contact@ycis.ac.in
 # CONTACT_FROM_EMAIL=onboarding@resend.dev
 
 # ========================================
+# AWS SNS (SMS Service)
+# ========================================
+# Get your credentials from AWS IAM Console
+# Required IAM permissions: sns:Publish
+AWS_ACCESS_KEY_ID=your_aws_access_key_id_here
+AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key_here
+AWS_REGION=ap-south-1  # Asia Pacific (Mumbai) - Defaults to Mumbai if not specified
+
+# AWS SNS Setup Steps:
+# 1. Go to AWS IAM Console (https://console.aws.amazon.com/iam/)
+# 2. Create a new user or use existing user
+# 3. Attach policy: AmazonSNSFullAccess (or create custom policy with sns:Publish permission)
+# 4. Create Access Key (Access key ID and Secret access key)
+# 5. Copy the credentials to your .env.local file
+# 6. Restart your dev server: npm run dev
+# 7. Test SMS sending from SMS Admin Dashboard
+
+# ⚠️  IMPORTANT: AWS SNS Sandbox Mode
+# 
+# If SMS only works for your phone number (8668428513) but not others,
+# your AWS account is in "Sandbox Mode" - this is normal for new accounts.
+#
+# ✅ QUICK FIX: Request Production Access
+# See AWS_SNS_PRODUCTION_ACCESS.md for complete step-by-step instructions
+#
+# Quick steps:
+# 1. Go to: AWS Console → SNS → Text messaging → Account preferences
+# 2. Click "Request production access"
+# 3. Fill out the form (use case: school notifications to students/parents)
+# 4. Wait 24-48 hours for approval
+# 5. After approval, SMS will work for any phone number!
+#
+# Temporary Solution (while waiting for approval):
+# - Verify phone numbers in AWS Console → SNS → Text messaging → Phone numbers
+# - Only verified numbers will receive SMS in sandbox mode
+#
+# Also ensure Spending Limits are set (not $0):
+# - Go to AWS SNS Console → Text messaging (SMS) → Account preferences
+# - Set Account spending limit (e.g., $10/month for testing)
+# - Set Per-message spending limit if needed
+#
+# See AWS_SNS_PRODUCTION_ACCESS.md for detailed instructions
+# See AWS_SNS_TROUBLESHOOTING.md for troubleshooting guide
+
+# AWS SNS Webhook Setup (for Delivery Receipts):
+# To receive delivery status notifications and incoming SMS:
+# 1. Deploy your application to a public URL (e.g., Vercel, AWS, etc.)
+# 2. Your webhook endpoint will be: https://yourdomain.com/api/sms-webhook
+# 3. Go to AWS SNS Console (https://console.aws.amazon.com/sns/)
+# 4. Create an SNS Topic for SMS delivery receipts
+# 5. Subscribe the topic to HTTP endpoint: https://yourdomain.com/api/sms-webhook
+# 6. Confirm the subscription when AWS sends a confirmation message
+# 7. Configure your SMS preferences in AWS SNS to publish delivery receipts to the topic
+# 
+# Note: For receiving incoming SMS messages (two-way SMS), you'll need AWS Pinpoint
+# instead of AWS SNS, as SNS only supports one-way SMS sending.
+
+# ========================================
 # QUICK START
 # ========================================
 # 1. Create a new file: .env.local
 # 2. Copy the variables above
-# 3. Replace "re_your_api_key_here" with your actual Resend API key
+# 3. Replace placeholder values with your actual credentials:
+#    - RESEND_API_KEY for email service
+#    - AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY for SMS service
 # 4. Save the file
 # 5. Restart your dev server: npm run dev
 # 6. Test the contact form at /contact
+# 7. Test SMS sending at /sms-admin/send
 

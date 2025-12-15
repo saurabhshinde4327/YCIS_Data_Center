@@ -152,6 +152,11 @@ export function Footer() {
                     Admin Login
                   </Link>
                 </li>
+                <li>
+                  <Link href="/sms-admin" className="text-muted-foreground hover:text-foreground">
+                    SMS Admin Login
+                  </Link>
+                </li>
               </ul>
 
               {/* Visitor Counter - Odometer Style */}

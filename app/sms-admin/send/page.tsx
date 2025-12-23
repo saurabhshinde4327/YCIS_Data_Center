@@ -10,6 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Label } from "@/components/ui/label"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { MessageCircle } from "lucide-react"
 
 interface StudentRow {
   id: string
@@ -136,12 +137,111 @@ export default function SendSmsPage() {
       }
 
       const data = await res.json()
-      setStatus(`Successfully sent SMS to ${data.sentCount} student(s).`)
+      
+      if (data.warning) {
+        setStatus(`SMS request sent to ${data.sentCount} student(s). ⚠️ ${data.warning}`)
+      } else {
+        setStatus(`Successfully sent SMS to ${data.sentCount} student(s).`)
+      }
+      
       setTitle("")
       setMessage("")
       setSelectedStudents(new Set())
     } catch (err: any) {
       setError(err.message || "Failed to send SMS")
+    } finally {
+      setIsSending(false)
+      setTimeout(() => setStatus(null), 5000)
+    }
+  }
+
+  const handleSendWhatsApp = async () => {
+    if (!title.trim()) {
+      setError("Please enter a title for the message.")
+      return
+    }
+
+    if (!message.trim()) {
+      setError("Please enter a message.")
+      return
+    }
+
+    if (selectedStudents.size === 0) {
+      setError("Please select at least one student.")
+      return
+    }
+
+    setIsSending(true)
+    setError(null)
+    setStatus("Sending WhatsApp messages directly...")
+
+    try {
+      const res = await fetch("/api/sms-admin/send-whatsapp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("smsAuthToken")}`
+        },
+        body: JSON.stringify({
+          title: title.trim(),
+          message: message.trim(),
+          studentIds: Array.from(selectedStudents)
+        })
+      })
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || "Failed to send WhatsApp")
+      }
+
+      const data = await res.json()
+      
+      if (data.success) {
+        setStatus(`✅ WhatsApp sent successfully to ${data.sentCount} student(s) via WhatsApp Business API (like Amazon)!`)
+        
+        if (data.failedCount > 0) {
+          setStatus(`WhatsApp sent to ${data.sentCount} student(s), ${data.failedCount} failed.`)
+          if (data.failures && data.failures.length > 0) {
+            setError(`Failed: ${data.failures.join('; ')}`)
+          }
+        }
+      } else {
+        throw new Error(data.error || "Failed to send WhatsApp")
+      }
+      
+      setTitle("")
+      setMessage("")
+      setSelectedStudents(new Set())
+    } catch (err: any) {
+      // Check if WhatsApp API is not configured, fallback to WhatsApp Web
+      if (err.message?.includes('not configured') || err.message?.includes('WHATSAPP')) {
+        setError("WhatsApp Business API not configured. Falling back to WhatsApp Web...")
+        
+        // Fallback to WhatsApp Web links
+        const formatPhoneForWhatsApp = (phone: string): string => {
+          let cleaned = phone.replace(/\D/g, '')
+          if (!cleaned.startsWith('91') && cleaned.length === 10) {
+            cleaned = '91' + cleaned
+          }
+          return cleaned
+        }
+        
+        const fullMessage = title.trim() ? `${title.trim()}\n\n${message.trim()}` : message.trim()
+        const encodedMessage = encodeURIComponent(fullMessage)
+        const selectedStudentData = students.filter(s => selectedStudents.has(s.id))
+        
+        selectedStudentData.forEach((student, index) => {
+          const formattedPhone = formatPhoneForWhatsApp(student.contactNo)
+          const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodedMessage}`
+          setTimeout(() => {
+            window.open(whatsappUrl, '_blank')
+          }, index * 500)
+        })
+        
+        setStatus(`WhatsApp API not configured. Opening WhatsApp Web for ${selectedStudentData.length} student(s).`)
+      } else {
+        setError(err.message || "Failed to send WhatsApp")
+      }
     } finally {
       setIsSending(false)
       setTimeout(() => setStatus(null), 5000)
@@ -154,9 +254,9 @@ export default function SendSmsPage() {
   return (
     <div className="max-w-6xl mx-auto py-10 px-4">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-blue-900">Send SMS</h1>
+        <h1 className="text-3xl font-bold text-blue-900">Send Messages</h1>
         <p className="text-sm text-gray-600 mt-2">
-          Send SMS messages to selected students. Select students individually or select all.
+          Send SMS or WhatsApp messages to selected students. Select students individually or select all.
         </p>
       </div>
 
@@ -177,8 +277,8 @@ export default function SendSmsPage() {
         <div className="lg:col-span-2 space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>SMS Details</CardTitle>
-              <CardDescription>Enter the title and message for your SMS.</CardDescription>
+              <CardTitle>Send Message (SMS / WhatsApp)</CardTitle>
+              <CardDescription>Enter the title and message. Send via SMS or WhatsApp to selected students.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -206,14 +306,40 @@ export default function SendSmsPage() {
                   {message.length} characters
                 </p>
               </div>
-              <Button
-                onClick={handleSendSms}
-                disabled={isSending || !title.trim() || !message.trim() || selectedStudents.size === 0}
-                className="w-full"
-                size="lg"
-              >
-                {isSending ? "Sending..." : `Send SMS to ${selectedStudents.size} Student(s)`}
-              </Button>
+              <div className="space-y-3">
+                <Button
+                  onClick={handleSendSms}
+                  disabled={isSending || !title.trim() || !message.trim() || selectedStudents.size === 0}
+                  className="w-full"
+                  size="lg"
+                >
+                  {isSending ? "Sending..." : `Send SMS to ${selectedStudents.size} Student(s)`}
+                </Button>
+                
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-white px-2 text-gray-500">Or</span>
+                  </div>
+                </div>
+
+                <Button
+                  onClick={handleSendWhatsApp}
+                  disabled={isSending || !title.trim() || !message.trim() || selectedStudents.size === 0}
+                  className="w-full bg-green-600 hover:bg-green-700 text-white"
+                  size="lg"
+                  variant="default"
+                >
+                  <MessageCircle className="mr-2 h-5 w-5" />
+                  {isSending ? "Sending..." : `Send WhatsApp to ${selectedStudents.size} Student(s)`}
+                </Button>
+                
+                <p className="text-xs text-gray-500 text-center">
+                  Messages sent directly via WhatsApp Business API (like Amazon) - No need to open WhatsApp manually
+                </p>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -257,30 +383,102 @@ export default function SendSmsPage() {
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      {students.map((student) => (
-                        <div
-                          key={student.id}
-                          className="flex items-start space-x-3 p-2 rounded hover:bg-gray-50"
-                        >
-                          <Checkbox
-                            id={`student-${student.id}`}
-                            checked={selectedStudents.has(student.id)}
-                            onCheckedChange={(checked) =>
-                              handleStudentToggle(student.id, checked as boolean)
+                      {students.map((student) => {
+                        const handleQuickWhatsApp = async (e: React.MouseEvent) => {
+                          e.stopPropagation()
+                          if (!title.trim() && !message.trim()) {
+                            setError("Please enter a title and message first.")
+                            return
+                          }
+                          
+                          setIsSending(true)
+                          setError(null)
+                          setStatus(`Sending WhatsApp to ${student.name}...`)
+                          
+                          try {
+                            const res = await fetch("/api/sms-admin/send-whatsapp", {
+                              method: "POST",
+                              headers: {
+                                "Content-Type": "application/json",
+                                Authorization: `Bearer ${localStorage.getItem("smsAuthToken")}`
+                              },
+                              body: JSON.stringify({
+                                title: title.trim(),
+                                message: message.trim(),
+                                studentIds: [student.id]
+                              })
+                            })
+                            
+                            if (!res.ok) {
+                              const data = await res.json().catch(() => ({}))
+                              throw new Error(data.error || "Failed to send WhatsApp")
                             }
-                            disabled={isSending}
-                          />
-                          <Label
-                            htmlFor={`student-${student.id}`}
-                            className="flex-1 cursor-pointer"
+                            
+                            const data = await res.json()
+                            if (data.success) {
+                              setStatus(`✅ WhatsApp sent to ${student.name} successfully!`)
+                            } else {
+                              throw new Error(data.error || "Failed to send WhatsApp")
+                            }
+                          } catch (err: any) {
+                            // Fallback to WhatsApp Web if API not configured
+                            if (err.message?.includes('not configured') || err.message?.includes('WHATSAPP')) {
+                              const formatPhoneForWhatsApp = (phone: string): string => {
+                                let cleaned = phone.replace(/\D/g, '')
+                                if (!cleaned.startsWith('91') && cleaned.length === 10) {
+                                  cleaned = '91' + cleaned
+                                }
+                                return cleaned
+                              }
+                              const fullMessage = title.trim() ? `${title.trim()}\n\n${message.trim()}` : message.trim()
+                              const formattedPhone = formatPhoneForWhatsApp(student.contactNo)
+                              const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(fullMessage)}`
+                              window.open(whatsappUrl, '_blank')
+                              setStatus(`WhatsApp API not configured. Opening WhatsApp Web for ${student.name}...`)
+                            } else {
+                              setError(`Failed to send WhatsApp to ${student.name}: ${err.message}`)
+                            }
+                          } finally {
+                            setIsSending(false)
+                            setTimeout(() => setStatus(null), 3000)
+                          }
+                        }
+
+                        return (
+                          <div
+                            key={student.id}
+                            className="flex items-start space-x-3 p-2 rounded hover:bg-gray-50"
                           >
-                            <div className="font-medium text-sm">{student.name}</div>
-                            <div className="text-xs text-gray-500">
-                              {student.contactNo} • {student.className}
-                            </div>
-                          </Label>
-                        </div>
-                      ))}
+                            <Checkbox
+                              id={`student-${student.id}`}
+                              checked={selectedStudents.has(student.id)}
+                              onCheckedChange={(checked) =>
+                                handleStudentToggle(student.id, checked as boolean)
+                              }
+                              disabled={isSending}
+                            />
+                            <Label
+                              htmlFor={`student-${student.id}`}
+                              className="flex-1 cursor-pointer"
+                            >
+                              <div className="font-medium text-sm">{student.name}</div>
+                              <div className="text-xs text-gray-500">
+                                {student.contactNo} • {student.className}
+                              </div>
+                            </Label>
+                            <Button
+                              onClick={handleQuickWhatsApp}
+                              disabled={isSending || (!title.trim() && !message.trim())}
+                              size="sm"
+                              variant="outline"
+                              className="h-8 w-8 p-0 bg-green-50 hover:bg-green-100 border-green-300"
+                              title="Send WhatsApp directly to this student"
+                            >
+                              <MessageCircle className="h-4 w-4 text-green-600" />
+                            </Button>
+                          </div>
+                        )
+                      })}
                     </div>
                   )}
                 </ScrollArea>

@@ -1,5 +1,5 @@
 {
-  "totalVisits": 55,
+  "totalVisits": 59,
   "uniqueVisitors": [
     "visitor_1761044000996_7qxazqy4t",
     "visitor_1761717755403_u15nemrg5",
@@ -14,9 +14,9 @@
     "visitor_1765804197525_hodfj6khm"
   ],
   "dailyVisits": {
-    "2025-11-17": 4,
-    "2025-11-19": 12,
-    "2025-12-15": 9
+    "2025-12-15": 9,
+    "2025-12-18": 2,
+    "2025-12-23": 2
   },
-  "lastUpdated": "2025-12-15T18:17:44.336Z"
+  "lastUpdated": "2025-12-23T08:52:41.443Z"
 }

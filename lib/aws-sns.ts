@@ -1,10 +1,12 @@
-import { SNSClient, PublishCommand } from '@aws-sdk/client-sns'
+import { SNSClient, PublishCommand, GetSMSAttributesCommand } from '@aws-sdk/client-sns'
 
 // Check if AWS credentials are configured
 const AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID
 const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY
 // AWS Region: ap-south-1 = Asia Pacific (Mumbai)
 const AWS_REGION = process.env.AWS_REGION || 'ap-south-1' // Asia Mumbai region
+// Sender ID: Displayed as the sender on receiving devices (also configured in AWS Console)
+const AWS_SNS_SENDER_ID = process.env.AWS_SNS_SENDER_ID || 'YCIS-SATARA'
 
 // Initialize AWS SNS Client only if credentials are provided
 const snsClient = AWS_ACCESS_KEY_ID && AWS_SECRET_ACCESS_KEY
@@ -16,6 +18,25 @@ const snsClient = AWS_ACCESS_KEY_ID && AWS_SECRET_ACCESS_KEY
       },
     })
   : null
+
+/**
+ * Get AWS SNS SMS attributes (spending limits, etc.)
+ * Note: Sandbox mode status is not available via API, only via console
+ */
+export async function getSmsAttributes(): Promise<Record<string, string> | null> {
+  if (!snsClient) {
+    return null
+  }
+
+  try {
+    const command = new GetSMSAttributesCommand({})
+    const response = await snsClient.send(command)
+    return response.attributes || null
+  } catch (error: any) {
+    console.error('[SMS] Failed to get SMS attributes:', error)
+    return null
+  }
+}
 
 /**
  * Format phone number to E.164 format required by AWS SNS
@@ -55,7 +76,27 @@ export async function sendSmsViaSNS(phoneNumber: string, message: string): Promi
     const formattedPhone = formatPhoneNumber(phoneNumber)
     
     console.log(`[SMS] Region: ${AWS_REGION} (Asia Pacific - Mumbai)`)
+    console.log(`[SMS] Sender ID: ${AWS_SNS_SENDER_ID}`)
     console.log(`[SMS] Attempting to send SMS to ${formattedPhone} (original: ${phoneNumber})`)
+    
+    // Check SMS attributes (spending limits, etc.)
+    const attributes = await getSmsAttributes()
+    if (attributes) {
+      const monthlySpendLimit = attributes.MonthlySpendLimit
+      const defaultSMSType = attributes.DefaultSMSType
+      console.log(`[SMS] Account Attributes:`, {
+        MonthlySpendLimit: monthlySpendLimit || 'Not set',
+        DefaultSMSType: defaultSMSType || 'Not set'
+      })
+      
+      // Warn if spending limit might be an issue
+      if (monthlySpendLimit === '0' || monthlySpendLimit === '0.00') {
+        console.error(`[SMS] ❌ CRITICAL: Monthly spending limit is set to $0!`)
+        console.error(`[SMS] ❌ SMS will NOT be delivered with $0 spending limit.`)
+        console.error(`[SMS] ❌ Fix: AWS Console → SNS → Text messaging → Preferences → Set spending limit > $0`)
+        // Don't throw error, but log it clearly
+      }
+    }
     
     // AWS SNS has a message length limit of 1600 characters
     if (message.length > 1600) {
@@ -77,22 +118,39 @@ export async function sendSmsViaSNS(phoneNumber: string, message: string): Promi
     
     console.log(`[SMS] AWS SNS Response:`, {
       MessageId: response.MessageId,
-      ResponseMetadata: response.$metadata
+      ResponseMetadata: response.$metadata,
+      StatusCode: response.$metadata?.httpStatusCode
     })
     
     if (!response.MessageId) {
-      throw new Error('Failed to send SMS: No message ID returned')
+      throw new Error('Failed to send SMS: No message ID returned from AWS SNS')
+    }
+    
+    // Check HTTP status code
+    if (response.$metadata?.httpStatusCode !== 200) {
+      throw new Error(
+        `AWS SNS returned status ${response.$metadata?.httpStatusCode}. SMS may not have been sent.`
+      )
     }
     
     // Log the formatted phone number for debugging
-    console.log(`[SMS] Successfully sent SMS to ${formattedPhone}, MessageId: ${response.MessageId}`)
+    console.log(`[SMS] ✅ SMS request accepted by AWS SNS`)
+    console.log(`[SMS] MessageId: ${response.MessageId}`)
+    console.log(`[SMS] Phone: ${formattedPhone}`)
+    console.log(`[SMS] Sender ID: ${AWS_SNS_SENDER_ID}`)
     
-    // Warning about sandbox mode
-    console.warn(`[SMS] ⚠️  IMPORTANT: If SMS is not received, your AWS account is likely in SANDBOX MODE.`)
-    console.warn(`[SMS] ⚠️  Sandbox mode only allows sending SMS to verified phone numbers.`)
-    console.warn(`[SMS] ⚠️  To send SMS to any number, request production access:`)
-    console.warn(`[SMS] ⚠️  AWS Console → SNS → Text messaging → Account preferences → Request production access`)
+    // Important warnings about delivery
+    console.error(`[SMS] ⚠️  ⚠️  ⚠️  CRITICAL DELIVERY WARNING ⚠️  ⚠️  ⚠️`)
+    console.error(`[SMS] ⚠️  AWS SNS accepted the request, but SMS may NOT be delivered if:`)
+    console.error(`[SMS] ⚠️  1. SANDBOX MODE: Account is in sandbox (check AWS Console)`)
+    console.error(`[SMS] ⚠️     → SMS only delivers to VERIFIED numbers in sandbox mode`)
+    console.error(`[SMS] ⚠️     → Number ${formattedPhone} must be verified in AWS Console`)
+    console.error(`[SMS] ⚠️  2. SPENDING LIMITS: Must be > $0 (currently: ${attributes?.MonthlySpendLimit || 'unknown'})`)
+    console.error(`[SMS] ⚠️  3. PRODUCTION ACCESS: Request via AWS Support if in sandbox`)
+    console.error(`[SMS] ⚠️  Check: AWS Console → SNS → Text messaging → Account preferences`)
+    console.error(`[SMS] ⚠️  If SMS not received, it's likely SANDBOX MODE or SPENDING LIMIT = $0`)
     
+    // Return message ID but with clear warning
     return response.MessageId
   } catch (error: any) {
     console.error('[SMS] AWS SNS Error Details:', {

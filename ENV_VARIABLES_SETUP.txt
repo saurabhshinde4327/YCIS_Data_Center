@@ -1,100 +1,105 @@
-# ========================================
-# YCIS Data Center - Environment Variables
-# ========================================
-# Create a file named .env.local in your project root
-# and add these variables with your actual values
+# Environment Variables Setup Guide
+# Copy these variables to your .env.local file
 
-# ========================================
+# ============================================
 # DATABASE CONFIGURATION
-# ========================================
-DB_HOST=91.108.105.168
-DB_PORT=3306
+# ============================================
+DB_HOST=localhost
 DB_USER=root
-DB_PASSWORD=Saurabh@2000
-DB_NAME=ycis_datacenter
-DB_CONN_LIMIT=10
+DB_PASSWORD=your_password_here
+DB_NAME=your_database_name
 
-# ========================================
-# EMAIL SERVICE (Contact Form)
-# ========================================
-# Get your API key from https://resend.com
-RESEND_API_KEY=re_your_api_key_here
+# ============================================
+# JWT SECRET (for authentication)
+# ============================================
+JWT_SECRET=your_jwt_secret_key_here
 
-# Email addresses
-CONTACT_TO_EMAIL=datacenter@ycis.ac.in
-CONTACT_FROM_EMAIL=contact@ycis.ac.in
+# ============================================
+# FAST2SMS (SMS Service)
+# ============================================
+# Get your API key from Fast2SMS Dashboard: https://www.fast2sms.com/
+# Sign up for free account: https://www.fast2sms.com/
+FAST2SMS_API_KEY=I0rzYguUsTKCwi9kBtaveWSNZl842mxLXVqfObPH5dRMQD3yh7zliEJthN10XCxVgIbMDuZ8q7v5HnOs
+FAST2SMS_SENDER_ID=YCIS-SATARA  # Sender ID (must be registered in Fast2SMS DLT portal, max 6 characters)
 
-# Note: If domain not verified in Resend, use:
-# CONTACT_FROM_EMAIL=onboarding@resend.dev
+# ============================================
+# WHATSAPP BUSINESS API (Meta/Facebook)
+# ============================================
+# Send WhatsApp messages directly via API (like Amazon) - No need to open WhatsApp manually
+# Setup: https://developers.facebook.com/docs/whatsapp
+# 
+# Get credentials from Meta for Developers: https://developers.facebook.com/
+# 1. Create Meta Developer Account
+# 2. Create a Business App
+# 3. Add WhatsApp product
+# 4. Get Phone Number ID and Access Token
+WHATSAPP_PHONE_NUMBER_ID=your_whatsapp_phone_number_id_here
+WHATSAPP_ACCESS_TOKEN=your_whatsapp_access_token_here
+WHATSAPP_BUSINESS_ACCOUNT_ID=your_business_account_id_here  # Optional
+WHATSAPP_API_VERSION=v21.0  # Optional, defaults to v21.0
 
-# ========================================
-# AWS SNS (SMS Service)
-# ========================================
-# Get your credentials from AWS IAM Console
-# Required IAM permissions: sns:Publish
-AWS_ACCESS_KEY_ID=your_aws_access_key_id_here
-AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key_here
-AWS_REGION=ap-south-1  # Asia Pacific (Mumbai) - Defaults to Mumbai if not specified
+# Note: If WhatsApp Business API is not configured, the system will fallback to WhatsApp Web links
 
-# AWS SNS Setup Steps:
-# 1. Go to AWS IAM Console (https://console.aws.amazon.com/iam/)
-# 2. Create a new user or use existing user
-# 3. Attach policy: AmazonSNSFullAccess (or create custom policy with sns:Publish permission)
-# 4. Create Access Key (Access key ID and Secret access key)
-# 5. Copy the credentials to your .env.local file
+# ============================================
+# FAST2SMS Setup Steps:
+# ============================================
+# 1. Sign up for Fast2SMS account: https://www.fast2sms.com/
+# 2. Go to Fast2SMS Dashboard → Dev API section
+# 3. Copy your API Authorization Key
+# 4. Add FAST2SMS_API_KEY to .env.local
+# 5. Register your Sender ID in Fast2SMS DLT Manager:
+#    - Go to Fast2SMS Dashboard → DLT Manager
+#    - Register sender ID: YCIS-SATARA
+#    - Wait for approval (usually takes 24-48 hours)
 # 6. Restart your dev server: npm run dev
 # 7. Test SMS sending from SMS Admin Dashboard
+#
+# Note: 
+# - Fast2SMS provides free testing credits upon signup
+# - Sender ID "YCIS-SATARA" must be registered in DLT portal for India
+# - Fast2SMS supports only Indian phone numbers (10-digit format)
+# - Route 'q' is for promotional messages, 't' for transactional
+#
+# ============================================
+# WHATSAPP BUSINESS API Setup Steps:
+# ============================================
+# 1. Create Meta Developer Account: https://developers.facebook.com/
+# 2. Create a new Business App
+# 3. Add WhatsApp product to your app
+# 4. Complete business verification (required by Meta)
+# 5. Get Phone Number ID from WhatsApp → API Setup
+# 6. Generate Access Token (permanent token recommended)
+# 7. Add credentials to .env.local:
+#    - WHATSAPP_PHONE_NUMBER_ID
+#    - WHATSAPP_ACCESS_TOKEN
+# 8. Restart dev server: npm run dev
+# 9. Test WhatsApp sending from SMS Admin Dashboard
+#
+# Benefits:
+# - Messages sent directly via API (like Amazon)
+# - No need to open WhatsApp manually
+# - Delivery status tracking
+# - Professional business messaging
+# - Supports templates, media, and more
+#
+# Fallback:
+# - If WhatsApp Business API is not configured, system automatically uses WhatsApp Web links
+# - Messages will open in WhatsApp Web/App with pre-filled message
 
-# ⚠️  IMPORTANT: AWS SNS Sandbox Mode
-# 
-# If SMS only works for your phone number (8668428513) but not others,
-# your AWS account is in "Sandbox Mode" - this is normal for new accounts.
-#
-# ✅ QUICK FIX: Request Production Access
-# See AWS_SNS_PRODUCTION_ACCESS.md for complete step-by-step instructions
-#
-# Quick steps:
-# 1. Go to: AWS Console → SNS → Text messaging → Account preferences
-# 2. Click "Request production access"
-# 3. Fill out the form (use case: school notifications to students/parents)
-# 4. Wait 24-48 hours for approval
-# 5. After approval, SMS will work for any phone number!
-#
-# Temporary Solution (while waiting for approval):
-# - Verify phone numbers in AWS Console → SNS → Text messaging → Phone numbers
-# - Only verified numbers will receive SMS in sandbox mode
-#
-# Also ensure Spending Limits are set (not $0):
-# - Go to AWS SNS Console → Text messaging (SMS) → Account preferences
-# - Set Account spending limit (e.g., $10/month for testing)
-# - Set Per-message spending limit if needed
-#
-# See AWS_SNS_PRODUCTION_ACCESS.md for detailed instructions
-# See AWS_SNS_TROUBLESHOOTING.md for troubleshooting guide
+# ============================================
+# FAST2SMS Webhook Setup (Optional):
+# ============================================
+# For delivery status and incoming SMS:
+# 1. Deploy your application to a public URL (e.g., Vercel, Railway)
+# 2. Go to Fast2SMS Dashboard → Settings → Webhooks
+# 3. Add webhook URL: https://yourdomain.com/api/sms-webhook
+# 4. Fast2SMS will send delivery status and incoming messages to your webhook
 
-# AWS SNS Webhook Setup (for Delivery Receipts):
-# To receive delivery status notifications and incoming SMS:
-# 1. Deploy your application to a public URL (e.g., Vercel, AWS, etc.)
-# 2. Your webhook endpoint will be: https://yourdomain.com/api/sms-webhook
-# 3. Go to AWS SNS Console (https://console.aws.amazon.com/sns/)
-# 4. Create an SNS Topic for SMS delivery receipts
-# 5. Subscribe the topic to HTTP endpoint: https://yourdomain.com/api/sms-webhook
-# 6. Confirm the subscription when AWS sends a confirmation message
-# 7. Configure your SMS preferences in AWS SNS to publish delivery receipts to the topic
-# 
-# Note: For receiving incoming SMS messages (two-way SMS), you'll need AWS Pinpoint
-# instead of AWS SNS, as SNS only supports one-way SMS sending.
-
-# ========================================
-# QUICK START
-# ========================================
-# 1. Create a new file: .env.local
-# 2. Copy the variables above
-# 3. Replace placeholder values with your actual credentials:
-#    - RESEND_API_KEY for email service
-#    - AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY for SMS service
-# 4. Save the file
-# 5. Restart your dev server: npm run dev
-# 6. Test the contact form at /contact
-# 7. Test SMS sending at /sms-admin/send
-
+# ============================================
+# IMPORTANT NOTES:
+# ============================================
+# - Never commit .env.local to version control (it's in .gitignore)
+# - Replace all placeholder values with your actual credentials
+# - Restart your dev server after changing environment variables
+# - Fast2SMS API key is sensitive - keep it secure
+# - For production, use environment variables in your hosting platform
